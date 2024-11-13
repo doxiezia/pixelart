@@ -12,11 +12,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearGridButton = document.getElementById('clear-grid');
   
   let currentPalette = [];
+  let predefinedPalettes = {
+    "Batman": ["#000000", "#45413e", "#666561", "#a5a4a1", "#f6f5f9", "#d1e5dd", "#54b1d0", "#2d61af", "#193657"],
+    "IronMan": ["#000000", "#666561", "#a5a4a1", "#6e859f", "#193657", "#f6f6f7", "#c29e40", "#d7c695", "#968564"]
+  };
+
+  // Load predefined palettes and merge with locally saved palettes
   let savedPalettes = JSON.parse(localStorage.getItem('savedPalettes')) || {};
+  savedPalettes = { ...predefinedPalettes, ...savedPalettes }; // Merge predefined palettes
+
   let mouseDown = false;
   let currentGrid = [];
   let selectedPixels = [];
-  
+
   // Extract gridIndex dynamically from the page using data attribute
   const gridIndex = document.body.dataset.gridIndex || 'grid1'; // Default to 'grid1' if not set
 
@@ -119,9 +127,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const deleteButton = document.createElement('button');
       deleteButton.innerText = 'Delete';
       deleteButton.addEventListener('click', () => {
-        delete savedPalettes[paletteName];
-        localStorage.setItem('savedPalettes', JSON.stringify(savedPalettes));
-        updateSavedPalettesDisplay();
+        if (predefinedPalettes[paletteName]) {
+          alert('Cannot delete predefined palettes.');
+        } else {
+          delete savedPalettes[paletteName];
+          localStorage.setItem('savedPalettes', JSON.stringify(savedPalettes));
+          updateSavedPalettesDisplay();
+        }
       });
       savedPalettesContainer.appendChild(deleteButton);
     });
@@ -195,12 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
       currentGrid[pixelIndex] = colorPicker.value;
       localStorage.setItem(gridIndex, JSON.stringify(currentGrid)); // Save each pixel as it's painted
     } else if (drawModeSelect.value === "eraser" && mouseDown) {
-      pixel.style.backgroundColor = '#ffffff';
-      currentGrid[pixelIndex] = '#ffffff';
-      localStorage.setItem(gridIndex, JSON.stringify(currentGrid)); // Save erased pixels
+      pixel.style.backgroundColor = '#ffffff'; 
+      currentGrid[pixelIndex] = '#ffffff'; 
+      localStorage.setItem(gridIndex, JSON.stringify(currentGrid)); // Save each pixel as it's erased
     }
   }
-
-  // Export functions for page navigation
-  // No need to export again, as generateGrid is already exposed
 });
