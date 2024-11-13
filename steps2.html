@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background-color: #000000;
+        }
+        .grid-container {
+            display: flex;
+            align-items: center;
+            margin: 0px 0;
+        }
+        .grid {
+            display: grid;
+            background-color: #484848;
+            grid-template-columns: repeat(16, 1fr); /* 16 columns */
+            grid-template-rows: repeat(16, 1fr);
+            margin-left: 20px;
+            width: 640px;
+            border: 2px solid rgb(205, 205, 205);
+        }
+        .pixel {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            background-color: transparent;
+        }
+        .color-number {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 5px black;
+            font-size: 18px;
+            z-index: 10;
+        }
+        .step-label {
+            align-self: center;
+            font-weight: bold;
+            font-size: 40px;
+            margin: 20px 0;
+        }
+        #palette-key {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            margin-right: 20px;
+            border: 2px solid rgb(205, 205, 205);
+        }
+        #palette-key div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid black;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <h1>Generator Steps</h1>
+    <button onclick="window.location.href='index.html'">Back to Menu</button>
+    <label for="palette-select">Select a Palette:</label>
+    <select id="palette-select"></select>
+
+    <div id="grids-container"></div>
+
+    <script>
+        // Convert RGB or color names to hex format
+        function toHex(color) {
+            let ctx = document.createElement('canvas').getContext('2d');
+            ctx.fillStyle = color;
+            return ctx.fillStyle;  // This will always return the color in hex format
+        }
+
+        // Load saved palettes from local storage
+        const savedPalettes = JSON.parse(localStorage.getItem('savedPalettes')) || {};
+        const paletteSelect = document.getElementById('palette-select');
+        const gridsContainer = document.getElementById('grids-container');
+
+        // Populate the dropdown with saved palettes
+        for (const paletteName in savedPalettes) {
+            const option = document.createElement('option');
+            option.value = paletteName;
+            option.textContent = paletteName;
+            paletteSelect.appendChild(option);
+        }
+
+        // Function to generate grids based on the selected palette
+        function generateGrids(palette) {
+            gridsContainer.innerHTML = ''; // Clear previous grids
+
+            const colors = savedPalettes[palette].map(toHex);  // Convert palette colors to hex
+            const gridData = JSON.parse(localStorage.getItem('grid11Data')) || Array(2304).fill('#ffffff'); // 48x48 grid data
+
+            const steps = [
+                { rowStart: 0, colStart: 0 },   // Step 1
+                { rowStart: 0, colStart: 16 },  // Step 2
+                { rowStart: 0, colStart: 32 },  // Step 3
+                { rowStart: 16, colStart: 0 },  // Step 4
+                { rowStart: 16, colStart: 16 }, // Step 5
+                { rowStart: 16, colStart: 32 }, // Step 6
+                { rowStart: 32, colStart: 0 },  // Step 7
+                { rowStart: 32, colStart: 16 }, // Step 8
+                { rowStart: 32, colStart: 32 }  // Step 9
+            ];
+
+            for (let step = 0; step < 9; step++) {
+                // Step label
+                const stepLabel = document.createElement('div');
+                stepLabel.classList.add('step-label');
+                stepLabel.textContent = `Step ${step + 1}`;
+
+                // Grid container for each step
+                const gridContainer = document.createElement('div');
+                gridContainer.classList.add('grid-container');
+
+                const keyContainer = document.createElement('div');
+                keyContainer.id = 'palette-key';
+
+                // Create the palette key for this step
+                colors.forEach((color, index) => {
+                    const keyItem = document.createElement('div');
+                    keyItem.style.backgroundColor = color;
+                    keyItem.innerHTML = `<span>${index + 1}</span>`;
+                    keyContainer.appendChild(keyItem);
+                });
+
+                // Create the grid
+                const gridDiv = document.createElement('div');
+                gridDiv.classList.add('grid');
+
+                const { rowStart, colStart } = steps[step];
+
+                // Create a 16x16 grid for each step
+                for (let i = 0; i < 16; i++) {
+                    for (let j = 0; j < 16; j++) {
+                        const pixel = document.createElement('div');
+                        pixel.classList.add('pixel');
+                        const globalRow = rowStart + i;
+                        const globalCol = colStart + j;
+                        const color = toHex(gridData[globalRow * 48 + globalCol] || '#ffffff');  // Ensure grid color is hex
+
+                        // Set background color of pixel to match the grid color
+                        pixel.style.backgroundColor = color;
+
+                        // Find the index of the color in the selected palette
+                        const colorIndex = colors.indexOf(color);
+                        if (colorIndex !== -1) {
+                            const colorNumber = document.createElement('div');
+                            colorNumber.classList.add('color-number');
+                            colorNumber.textContent = colorIndex + 1;
+                            pixel.appendChild(colorNumber);
+                        } else {
+                            console.log(`Color not found in palette: ${color}`); // Debugging output
+                        }
+
+                        gridDiv.appendChild(pixel);
+                    }
+                }
+
+                gridContainer.appendChild(keyContainer); // Add key to grid container
+                gridContainer.appendChild(gridDiv); // Add grid to grid container
+                gridsContainer.appendChild(stepLabel); // Add step label
+                gridsContainer.appendChild(gridContainer); // Add grid container to main container
+            }
+        }
+
+        // Update grids when a new palette is selected
+        paletteSelect.addEventListener('change', (event) => {
+            const selectedPalette = event.target.value;
+            generateGrids(selectedPalette);
+        });
+
+        // Initialize by selecting the first palette if available
+        if (paletteSelect.options.length > 0) {
+            paletteSelect.selectedIndex = 0;
+            generateGrids(paletteSelect.value);
+        }
+        
+    </script>
+</body>
+</html>

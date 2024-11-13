@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid 2 (16x16)</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-grid-index="grid2"> <!-- Add data-grid-index here -->
+    <h1>Grid 2 (16x16)</h1>
+    <button onclick="window.location.href='index.html'">Back to Menu</button>
+    <button onclick="window.location.href='final.html'">View Final Grid</button>
+
+    <label for="color-picker">Choose Color:</label>
+    <input type="color" id="color-picker" value="#ff0000">
+    <input type="text" id="hex-color" value="#ff0000">
+
+    <!-- Drawing Mode Selection -->
+    <label for="draw-mode">Drawing Mode:</label>
+    <select id="draw-mode">
+        <option value="paint">Paint Mode</option>
+        <option value="select">Selection Mode</option>
+        <option value="eraser">Eraser Mode</option>
+        <option value="eyedropper">Eyedropper Mode</option>
+    </select>
+    <button id="apply-color">Apply Color to Selected</button>
+    <button id="clear-grid">Clear Grid</button>
+
+    <!-- Palette Management -->
+    <div id="palette-controls">
+        <button id="add-color">Add Color</button>
+        <input type="text" id="palette-name" placeholder="Palette Name">
+        <button id="save-palette">Save Palette</button>
+        <button id="clear-palette">Clear Palette</button>
+    </div>
+
+    <div id="palette-display"></div>
+    <div id="saved-palettes"></div>
+
+    <div id="grid-container"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Call the generateGrid function with the desired width, height, and grid key
+        document.addEventListener('DOMContentLoaded', () => {
+            generateGrid(16, 16, 'grid2'); // Ensure the grid is generated upon loading the page
+        });
+    </script>
+</body>
+</html>

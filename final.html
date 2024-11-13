@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Art Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Final Grid</h1>
+  <button onclick="window.location.href='index.html'">Back to Menu</button>
+  <button onclick="window.location.href='steps.html'">Steps</button>
+  <div id="grid-container"></div>
+
+  <script>
+    function generateFinalGrid() {
+      const gridContainer = document.getElementById('grid-container');
+      gridContainer.style.display = 'grid';
+      gridContainer.style.gridTemplateColumns = 'repeat(48, 1fr)';
+      gridContainer.style.gap = '2px';
+      gridContainer.style.margin = '20px auto';
+      gridContainer.style.width = '80%';
+      gridContainer.style.maxWidth = '1200px';
+
+      // Create an array for the final grid
+      const finalGridData = Array(48 * 48).fill('#ffffff'); // Initialize with white pixels
+
+      // Loop through each 16x16 grid and place its pixels into the final grid
+      for (let i = 1; i <= 9; i++) {
+        // Fetch the latest data from local storage for each grid
+        const gridData = JSON.parse(localStorage.getItem(`grid${i}`)) || Array(256).fill('#ffffff');
+
+        // Calculate the starting position for the grid
+        const startX = ((i - 1) % 3) * 16; // 16 pixels wide for each grid
+        const startY = Math.floor((i - 1) / 3) * 16; // 16 pixels high for each grid
+
+        // Place pixels in the final grid
+        for (let row = 0; row < 16; row++) {
+          for (let col = 0; col < 16; col++) {
+            const finalIndex = (startY + row) * 48 + (startX + col);
+            finalGridData[finalIndex] = gridData[row * 16 + col]; // Copy pixel color
+          }
+        }
+      }
+
+      // Populate the grid container with pixels
+      gridContainer.innerHTML = ''; // Clear any existing pixels in the container
+      for (let i = 0; i < finalGridData.length; i++) {
+        const pixel = document.createElement('div');
+        pixel.classList.add('pixel');
+        pixel.style.backgroundColor = finalGridData[i];
+        gridContainer.appendChild(pixel);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      generateFinalGrid();
+    });
+  </script>
+</body>
+</html>

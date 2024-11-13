@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background-color: #000000; /* Background color */
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        #pixel-grid {
+            display: grid;
+            grid-template-columns: repeat(48, 10px); /* 48 columns for the grid */
+            grid-template-rows: repeat(48, 10px); /* 48 rows for the grid */
+            gap: 1px; /* Space between pixels */
+            margin-top: 20px;
+        }
+        .pixel {
+            width: 10px; /* Size of each pixel */
+            height: 10px; /* Size of each pixel */
+            border: 1px solid #000; /* Optional: border for visibility */
+        }
+        .slider-container {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .slider {
+            margin: 10px 0;
+        }
+        .slider-value {
+            margin: 5px;
+        }
+        .adjust-buttons {
+            display: flex;
+            align-items: center;
+            
+        }
+        .adjc {
+            display: flex;
+            align-items: center;
+        }
+        .adjust-buttons button {
+            height: 25px;
+            width: 25px;
+            margin: 0 5px;
+            text-align: center;
+            line-height: 1em;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload an Image and Convert to Pixel Art</h1>
+    <input type="file" id="image-upload" accept="image/*">
+    <label for="palette-select">Select a Palette:</label>
+    <select id="palette-select"></select>
+    <div class="slider-container">
+        <div class="adjc">
+            <label for="contrast-slider">Contrast:</label>
+            <div class="adjust-buttons">
+                <button id="contrast-decrease">-</button>
+                <span id="contrast-value" class="slider-value">0</span>
+                <button id="contrast-increase">+</button>
+            </div>
+            <input type="range" id="contrast-slider" class="slider" min="-100" max="100" value="0">
+        </div>
+        
+        <div class="adjc">
+            <label for="hue-slider">Hue:</label>
+            <div class="adjust-buttons">
+                <button id="hue-decrease">-</button>
+                <span id="hue-value" class="slider-value">0</span>
+                <button id="hue-increase">+</button>
+            </div>
+            <input type="range" id="hue-slider" class="slider" min="-180" max="180" value="0">
+        </div>
+        
+        <div class="adjc">
+            <label for="value-slider">Value:</label>
+            <div class="adjust-buttons">
+                <button id="value-decrease">-</button>
+                <span id="value-value" class="slider-value">0</span>
+                <button id="value-increase">+</button>
+            </div>
+            <input type="range" id="value-slider" class="slider" min="-100" max="100" value="0">
+        </div>
+    </div>
+
+    <div id="pixel-grid"></div>
+    <button id="transfer-button">Transfer to Grid</button>
+    <button onclick="window.location.href='grid11.html'">View Transfer</button>
+
+    <script>
+        // Load saved palettes from local storage
+        const savedPalettes = JSON.parse(localStorage.getItem('savedPalettes')) || {};
+        const paletteSelect = document.getElementById('palette-select');
+
+        // Populate the dropdown with saved palettes
+        for (const paletteName in savedPalettes) {
+            const option = document.createElement('option');
+            option.value = paletteName;
+            option.textContent = paletteName;
+            paletteSelect.appendChild(option);
+        }
+
+        let currentImage = null; // Store the current image
+
+        // Function to convert uploaded image to pixel art
+        function convertToPixelArt(image, palette) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const size = 48; // 48x48 pixels
+            canvas.width = size;
+            canvas.height = size;
+            ctx.drawImage(image, 0, 0, size, size); // Draw image at 48x48
+
+            const imageData = ctx.getImageData(0, 0, size, size);
+            const data = imageData.data;
+
+            const pixelGrid = document.getElementById('pixel-grid');
+            pixelGrid.innerHTML = ''; // Clear previous grid
+
+            // Create a mapping of colors in the palette
+            const paletteColors = savedPalettes[palette];
+
+            // Convert each pixel to the nearest color in the palette
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const index = (y * size + x) * 4;
+                    const r = data[index];
+                    const g = data[index + 1];
+                    const b = data[index + 2];
+
+                    // Adjust color based on sliders
+                    const adjustedColor = adjustColor(r, g, b);
+                    const nearestColor = findNearestColor(adjustedColor.r, adjustedColor.g, adjustedColor.b, paletteColors);
+                    const pixel = document.createElement('div');
+                    pixel.className = 'pixel';
+                    pixel.style.backgroundColor = nearestColor;
+                    pixelGrid.appendChild(pixel);
+                }
+            }
+        }
+
+        // Adjust color based on sliders
+        function adjustColor(r, g, b) {
+            const contrast = parseInt(document.getElementById('contrast-slider').value);
+            const hue = parseInt(document.getElementById('hue-slider').value);
+            const value = parseInt(document.getElementById('value-slider').value);
+
+            // Apply contrast adjustment
+            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            r = factor * (r - 128) + 128;
+            g = factor * (g - 128) + 128;
+            b = factor * (b - 128) + 128;
+
+            // Apply value adjustment
+            r = Math.min(255, Math.max(0, r + value));
+            g = Math.min(255, Math.max(0, g + value));
+            b = Math.min(255, Math.max(0, b + value));
+
+            // Apply hue adjustment (a simple placeholder implementation)
+            if (hue !== 0) {
+                const hsl = rgbToHsl(r, g, b);
+                hsl.h = (hsl.h + (hue / 360)) % 1; // Adjust hue
+                const rgb = hslToRgb(hsl.h, hsl.s, hsl.l);
+                r = rgb.r;
+                g = rgb.g;
+                b = rgb.b;
+            }
+
+            return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+        }
+
+        // Convert RGB to HSL
+        function rgbToHsl(r, g, b) {
+            r /= 255, g /= 255, b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0; // achromatic
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+
+            return { h, s, l };
+        }
+
+        // Convert HSL back to RGB
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+
+            if (s === 0) {
+                r = g = b = l; // achromatic
+            } else {
+                const hue2rgb = function(p, q, t) {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                }
+
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = Math.round(hue2rgb(p, q, h + 1 / 3) * 255);
+                g = Math.round(hue2rgb(p, q, h) * 255);
+                b = Math.round(hue2rgb(p, q, h - 1 / 3) * 255);
+            }
+
+            return { r, g, b };
+        }
+
+        // Find the nearest color in the palette
+        function findNearestColor(r, g, b, paletteColors) {
+            let nearestColor = paletteColors[0];
+            let nearestDistance = Infinity;
+
+            for (let color of paletteColors) {
+                const [pr, pg, pb] = hexToRgb(color);
+                const distance = Math.sqrt(Math.pow(r - pr, 2) + Math.pow(g - pg, 2) + Math.pow(b - pb, 2));
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestColor = color;
+                }
+            }
+
+            return nearestColor;
+        }
+
+        // Convert hex color to RGB
+        function hexToRgb(hex) {
+            let bigint = parseInt(hex.slice(1), 16);
+            let r = (bigint >> 16) & 255;
+            let g = (bigint >> 8) & 255;
+            let b = bigint & 255;
+
+            return [r, g, b];
+        }
+
+        // Upload image and set up the canvas
+        document.getElementById('image-upload').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    currentImage = img; // Store the current image
+                    convertToPixelArt(currentImage, paletteSelect.value); // Convert initially after loading
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // Slider value change event listeners
+        const sliders = [
+            { slider: 'contrast-slider', valueDisplay: 'contrast-value' },
+            { slider: 'hue-slider', valueDisplay: 'hue-value' },
+            { slider: 'value-slider', valueDisplay: 'value-value' }
+        ];
+
+        sliders.forEach(({ slider, valueDisplay }) => {
+            const sliderElement = document.getElementById(slider);
+            const valueElement = document.getElementById(valueDisplay);
+
+            // Event listener for slider input to adjust image live
+            sliderElement.addEventListener('input', () => {
+                valueElement.textContent = sliderElement.value;
+                if (currentImage) {
+                    convertToPixelArt(currentImage, paletteSelect.value); // Re-convert on slider change
+                }
+            });
+        });
+
+        // Increase/Decrease buttons for sliders
+        const adjustButtons = [
+            { decrease: 'contrast-decrease', increase: 'contrast-increase', slider: 'contrast-slider', valueDisplay: 'contrast-value' },
+            { decrease: 'hue-decrease', increase: 'hue-increase', slider: 'hue-slider', valueDisplay: 'hue-value' },
+            { decrease: 'value-decrease', increase: 'value-increase', slider: 'value-slider', valueDisplay: 'value-value' }
+        ];
+
+        adjustButtons.forEach(({ decrease, increase, slider, valueDisplay }) => {
+            const decreaseButton = document.getElementById(decrease);
+            const increaseButton = document.getElementById(increase);
+            const sliderElement = document.getElementById(slider);
+            const valueElement = document.getElementById(valueDisplay);
+
+            decreaseButton.addEventListener('click', () => {
+                sliderElement.value = Math.max(parseInt(sliderElement.value) - 1, sliderElement.min);
+                valueElement.textContent = sliderElement.value;
+                if (currentImage) {
+                    convertToPixelArt(currentImage, paletteSelect.value); // Re-convert on button click
+                }
+            });
+
+            increaseButton.addEventListener('click', () => {
+                sliderElement.value = Math.min(parseInt(sliderElement.value) + 1, sliderElement.max);
+                valueElement.textContent = sliderElement.value;
+                if (currentImage) {
+                    convertToPixelArt(currentImage, paletteSelect.value); // Re-convert on button click
+                }
+            });
+             
+        });
+        // Transfer pixel data to grid11.html
+document.getElementById('transfer-button').addEventListener('click', () => {
+    const pixelColors = Array.from(document.querySelectorAll('.pixel')).map(pixel => pixel.style.backgroundColor);
+    localStorage.setItem('grid11Data', JSON.stringify(pixelColors)); // Store pixel colors in local storage
+    alert('Pixel art transferred! Go to grid11.html to see it.');
+});
+
+    </script>
+</body>
+</html>

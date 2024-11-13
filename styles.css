@@ -1,0 +1,71 @@
+body {
+  font-family: 'Courier New', Courier, monospace;
+  text-align: center;
+  color: #ffffff;
+  margin: 20px;
+  background-color: #000000;
+}
+
+#grid-container {
+  display: grid;
+  background-color: #484848;
+  border: 2px solid rgb(205, 205, 205); /* White outline around the grid */
+  gap: 2px;
+  margin: 20px auto;
+  width: 80%;
+  max-width: 600px;
+  aspect-ratio: 1; /* Ensures the grid container keeps a 1:1 ratio */
+}
+
+.pixel {
+  width: 100%;
+  padding-top: 100%; /* This makes the pixel square */
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  border-radius: 50%; /* Makes the pixels circular */
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.palette-color {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  margin: 5px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #ddd;
+}
+
+button{
+  font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      text-decoration: none; /* Remove underline from links */
+      color: #000000; /* White text for links */
+      background-color: #ffffff; /* Blue background for links */
+      padding: 10px 20px; /* Padding around links */
+      border-radius: 5px; /* Rounded corners */
+      transition: background-color 0.3s ease; /* Smooth transition */
+      font-size: .7em; /* Increase link font size */
+      border-style: none;
+      border: 2px solid rgb(0, 0, 0);
+      /*display: inline-block; /* Allow padding and background */
+}
+button:hover{
+  background-color: #000000; /* Darker blue on hover */
+      color: #ffffff;
+      border: 2px solid white;
+}
+/* button {
+  margin: 10px;
+  padding: 10px;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #000000;
+  border-color: #ffffff;
+  border-radius: 8px;
+}*/
+
+#palette-controls {
+  margin: 20px 0;
+}
