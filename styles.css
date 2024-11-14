@@ -10,7 +10,6 @@ body {
   display: grid;
   background-color: #484848;
   border: 2px solid rgb(205, 205, 205); /* White outline around the grid */
-  gap: 2px;
   margin: 20px auto;
   aspect-ratio: 1; /* Ensures the grid container keeps a 1:1 ratio */
 }
