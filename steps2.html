@@ -90,24 +90,45 @@
             return ctx.fillStyle;  // This will always return the color in hex format
         }
 
-        // Predefined palettes
-        const predefinedPalettes = {
-            "Batman": [
-                "#000000", "#45413e", "#666561", "#a5a4a1", "#f6f5f9", "#d1e5dd",
-                "#54b1d0", "#2d61af", "#193657", "#623621", "#b65e30", "#d68d58",
-                "#dfca95", "#489c44", "#9774a9", "#c92f25"
-            ],
-            "IronMan": [
-                "#000000", "#666561", "#a5a4a1", "#6e859f", "#193657", "#f6f6f7",
-                "#c29e40", "#d7c695", "#968564", "#ac7649", "#b15f2b", "#c32e23",
-                "#7a2220", "#63361e", "#3e2114"
-            ]
-        };
-        // Add predefined palettes to the savedPalettes object
-        Object.assign(savedPalettes, predefinedPalettes);
+        let currentPalette = [];
+  let predefinedPalettes = {
+    "Batman": [
+      "#000000",
+      "#45413e",
+      "#666561",
+      "#a5a4a1",
+      "#f6f5f9",
+      "#d1e5dd",
+      "#54b1d0",
+      "#2d61af",
+      "#193657",
+      "#623621",
+      "#b65e30",
+      "#d68d58",
+      "#dfca95",
+      "#489c44",
+      "#9774a9",
+      "#c92f25"],
+    "IronMan": ["#000000",
+"#666561",
+"#a5a4a1",
+"#6e859f",
+"#193657",
+"#f6f6f7",
+"#c29e40",
+"#d7c695",
+"#968564",
+"#ac7649",
+"#b15f2b",
+"#c32e23",
+"#7a2220",
+"#63361e",
+"#3e2114"]
+  };
 
-        // Load saved palettes from local storage
-        const savedPalettes = JSON.parse(localStorage.getItem('savedPalettes')) || {};
+  // Load predefined palettes and merge with locally saved palettes
+  let savedPalettes = JSON.parse(localStorage.getItem('savedPalettes')) || {};
+  savedPalettes = { ...predefinedPalettes, ...savedPalettes }; // Merge predefined palettes
         const paletteSelect = document.getElementById('palette-select');
         const gridsContainer = document.getElementById('grids-container');
 
