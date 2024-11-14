@@ -105,6 +105,8 @@
                 "#7a2220", "#63361e", "#3e2114"
             ]
         };
+        // Add predefined palettes to the savedPalettes object
+        Object.assign(savedPalettes, predefinedPalettes);
         // Load saved palettes from local storage
         const savedPalettes = JSON.parse(localStorage.getItem('savedPalettes')) || {};
         const paletteSelect = document.getElementById('palette-select');
