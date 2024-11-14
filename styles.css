@@ -17,7 +17,6 @@ body {
 
 .pixel {
   width: 100%;
-  padding-top: 100%; /* This makes the pixel square */
   background-color: #ffffff;
   border: 1px solid #000000;
   border-radius: 50%; /* Makes the pixels circular */
